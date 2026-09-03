@@ -1,6 +1,5 @@
 package com.example.appnat2
 
-import android.content.Context
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,9 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
@@ -46,7 +43,7 @@ class MainActivity : ComponentActivity() {
 
     private fun turnOffTorch() {
         try {
-            val cameraManager = getSystemService(Context.CAMERA_SERVICE) as? CameraManager
+            val cameraManager = getSystemService(CAMERA_SERVICE) as? CameraManager
             val cameraId = cameraManager?.cameraIdList?.firstOrNull()
             if (cameraManager != null && cameraId != null) {
                 cameraManager.setTorchMode(cameraId, false)
@@ -63,35 +60,26 @@ fun Appnat2App() {
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            AppDestinations.entries.forEach {
+            AppDestinations.entries.forEach { destination ->
                 item(
                     icon = {
                         Icon(
-                            painterResource(it.icon),
-                            contentDescription = it.label
+                            painterResource(destination.icon),
+                            contentDescription = destination.label
                         )
                     },
-                    label = { Text(it.label) },
-                    selected = it == currentDestination,
-                    onClick = { currentDestination = it }
+                    label = { Text(destination.label) },
+                    selected = destination == currentDestination,
+                    onClick = { currentDestination = destination }
                 )
             }
         }
     ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = innerPadding.calculateTopPadding(),
-                        bottom = innerPadding.calculateBottomPadding()
-                    )
-            ) {
-                when (currentDestination) {
-                    AppDestinations.HOME -> HomeScreen()
-                    AppDestinations.PHONE -> FavoritesScreen()
-                    AppDestinations.PROFILE -> ProfileScreen()
-                }
+        Box(modifier = Modifier.fillMaxSize()) {
+            when (currentDestination) {
+                AppDestinations.HOME -> HomeScreen()
+                AppDestinations.PHONE -> FavoritesScreen()
+                AppDestinations.PROFILE -> ProfileScreen()
             }
         }
     }
