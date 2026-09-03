@@ -184,6 +184,14 @@ fun HomeScreen() {
 
             binding.btnLinterna.setOnClickListener { toggleFlashlight() }
 
+            val openMap = {
+                val intent = Intent(ctx, MapActivity::class.java)
+                ctx.startActivity(intent)
+            }
+            binding.btnMapaVer.setOnClickListener { openMap() }
+            binding.cardMapa.setOnClickListener { openMap() }
+            binding.flMapaPreview.setOnClickListener { openMap() }
+
             val openMultimedia = {
                 val intent = Intent(ctx, MultimediaActivity::class.java)
                 ctx.startActivity(intent)

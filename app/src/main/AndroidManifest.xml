@@ -11,6 +11,10 @@
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
+    <!-- Permisos de Ubicación (Fina/GPS y Coarse/Red) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -20,6 +24,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Appnat2">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyB1tPF4njFpGXUrlJhQmm1HztiFzbX-TB8" />
 
         <activity
             android:name=".MainActivity"
@@ -37,6 +45,12 @@
             android:name=".MultimediaActivity"
             android:exported="false"
             android:label="Multimedia"
+            android:theme="@style/Theme.Appnat2" />
+
+        <activity
+            android:name=".MapActivity"
+            android:exported="false"
+            android:label="Mapa de Ubicación"
             android:theme="@style/Theme.Appnat2" />
 
         <provider

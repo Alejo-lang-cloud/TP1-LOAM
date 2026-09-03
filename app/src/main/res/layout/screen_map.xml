@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:padding="16dp"
+    tools:context=".MapActivity">
+
+    <!-- TÍTULO DE LA PANTALLA -->
+    <TextView
+        android:id="@+id/tv_mapa_titulo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ubicación de Emergencia (GPS)"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#C62828"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- TARJETA CON LA DIRECCIÓN DETECTADA (Requerimiento C.a) -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_direccion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_mapa_titulo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dirección Actual:"
+                android:textSize="13sp"
+                android:textColor="#777777" />
+
+            <TextView
+                android:id="@+id/tv_direccion_grande"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Obteniendo dirección..."
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#1B5E20"
+                android:gravity="center" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- FRAGMENTO DE MAPA DE GOOGLE -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_map_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:strokeWidth="0dp"
+        app:layout_constraintTop_toBottomOf="@id/card_direccion"
+        app:layout_constraintBottom_toTopOf="@id/ll_botones_acciones"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/map_fragment"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- CONTENEDOR DE BOTONES DE ACCIÓN -->
+    <LinearLayout
+        android:id="@+id/ll_botones_acciones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- FILA DE BOTÓN ACTUALIZAR Y BOTÓN VOLVER -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <!-- BOTÓN ACTUALIZAR UBICACIÓN GPS -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_actualizar_ubicacion"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:minHeight="48dp"
+                android:text="Actualizar GPS"
+                android:textSize="13sp"
+                app:icon="@android:drawable/ic_popup_sync" />
+
+            <!-- BOTÓN VOLVER -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_volver"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:minHeight="48dp"
+                android:text="Volver"
+                android:textSize="13sp"
+                android:textColor="#D32F2F"
+                app:strokeColor="#D32F2F"
+                app:icon="@android:drawable/ic_menu_revert"
+                app:iconTint="#D32F2F" />
+        </LinearLayout>
+
+        <!-- BOTÓN REGISTRAR EN BASE DE DATOS FIREBASE (Requerimiento C.b) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_registrar_firebase"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="52dp"
+            android:text="Registrar Locación en Firebase"
+            android:textSize="15sp"
+            android:backgroundTint="#2E7D32"
+            android:textColor="#FFFFFF"
+            app:icon="@android:drawable/ic_menu_save" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

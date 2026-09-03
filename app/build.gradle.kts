@@ -61,4 +61,13 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // Servicios de Google Maps
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+
+    // Servicios de Ubicación para obtener las coordenadas actuales (GPS)
+    implementation("com.google.android.gms:play-services-location:21.1.0")
+
+    // Firebase Realtime Database
+    implementation("com.google.firebase:firebase-database-ktx:21.0.0")
 }
