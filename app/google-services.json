@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1009566516696",
+    "project_id": "valert-c1671",
+    "storage_bucket": "valert-c1671.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1009566516696:android:697ab3fe0cd06b861f5ead",
+        "android_client_info": {
+          "package_name": "com.example.appnat2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA70SNs7JQo0lrd1gttx2xzHqQqqBU5Y-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
