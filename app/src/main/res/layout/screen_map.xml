@@ -81,13 +81,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <!-- WEBVIEW DE RESPALDO CON OPENSTREETMAP (Para garantizar mapa visible si la API Key de Google está restringida o falla) -->
-        <WebView
-            android:id="@+id/web_view_mapa"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
-
     </FrameLayout>
 
     <!-- CONTENEDOR DE BOTONES DE ACCIÓN -->
