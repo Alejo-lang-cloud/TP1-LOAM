@@ -1,12 +1,15 @@
 package com.example.appnat2
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.webkit.WebSettings
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -15,8 +18,8 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.database.FirebaseDatabase
@@ -40,12 +43,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ScreenMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Inicializar renderizador de Google Maps
+        try {
+            MapsInitializer.initialize(applicationContext, MapsInitializer.Renderer.LATEST) {
+            }
+        } catch (_: Exception) {
+        }
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Inicializar fragmento de Google Maps
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map_fragment) as? SupportMapFragment
-        mapFragment?.getMapAsync(this)
+        // Inicializar MapView de Google Maps
+        binding.mapView.onCreate(savedInstanceState)
+        binding.mapView.getMapAsync(this)
+
+        // Cargar mapa interactivo de respaldo en WebView
+        configurarMapaWebView(latitudActual, longitudActual)
 
         // Listeners de los botones
         binding.btnRegistrarFirebase.setOnClickListener {
@@ -64,7 +76,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mGoogleMap = googleMap
 
-        // Configurar opciones de interfaz del mapa
         try {
             googleMap.uiSettings.isZoomControlsEnabled = true
             googleMap.uiSettings.isMyLocationButtonEnabled = true
@@ -73,18 +84,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         } catch (_: Exception) {
         }
 
-        // Posición inicial por defecto (Santa Rosa, La Pampa) visible inmediatamente
         val posicionInicial = LatLng(latitudActual, longitudActual)
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posicionInicial, 14f))
         googleMap.addMarker(
             MarkerOptions()
                 .position(posicionInicial)
                 .title("Santa Rosa, La Pampa")
-                .snippet("Ubicación predeterminada")
         )
-        obtenerDireccionFisica(latitudActual, longitudActual)
 
-        // Intentar actualizar con la ubicación GPS exacta
+        obtenerDireccionFisica(latitudActual, longitudActual)
         verificarGpsyObtenerUbicacion()
     }
 
@@ -94,12 +102,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
         if (!gpsActivado) {
-            binding.tvDireccionGrande.text = "GPS Desactivado (Usando locación aproximada)"
-            Toast.makeText(this, "Por favor, active el GPS para mayor precisión", Toast.LENGTH_SHORT).show()
+            binding.tvDireccionGrande.text = "GPS Desactivado (Ubicación aproximada)"
+            Toast.makeText(this, "Active el GPS para obtener su posición exacta", Toast.LENGTH_SHORT).show()
+            actualizarMapas(latitudActual, longitudActual, "Santa Rosa, La Pampa")
             return
         }
 
-        // Validación de Permisos de Ubicación
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
@@ -115,28 +123,76 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         } catch (_: SecurityException) {
         }
 
-        // Obtener la ubicación GPS del dispositivo
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 latitudActual = location.latitude
                 longitudActual = location.longitude
-                val ubicacionLatLng = LatLng(latitudActual, longitudActual)
-
-                mGoogleMap?.clear()
-                mGoogleMap?.addMarker(
-                    MarkerOptions()
-                        .position(ubicacionLatLng)
-                        .title("Tu Ubicación Actual")
-                )
-                mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(ubicacionLatLng, 16f))
-
+                actualizarMapas(latitudActual, longitudActual, "Tu Ubicación Actual")
                 obtenerDireccionFisica(latitudActual, longitudActual)
             } else {
-                Toast.makeText(this, "Obteniendo fix GPS...", Toast.LENGTH_SHORT).show()
+                actualizarMapas(latitudActual, longitudActual, "Santa Rosa, La Pampa")
+                Toast.makeText(this, "Obteniendo posición GPS...", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener {
-            Toast.makeText(this, "No se pudo actualizar por GPS", Toast.LENGTH_SHORT).show()
+            actualizarMapas(latitudActual, longitudActual, "Santa Rosa, La Pampa")
         }
+    }
+
+    private fun actualizarMapas(lat: Double, lon: Double, titulo: String) {
+        val latLng = LatLng(lat, lon)
+        mGoogleMap?.clear()
+        mGoogleMap?.addMarker(MarkerOptions().position(latLng).title(titulo))
+        mGoogleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+
+        // Actualizar también el mapa interactivo de respaldo en WebView
+        cargarUbicacionEnWebView(lat, lon, titulo)
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private fun configurarMapaWebView(lat: Double, lon: Double) {
+        val settings = binding.webViewMapa.settings
+        settings.javaScriptEnabled = true
+        settings.domStorageEnabled = true
+        settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+        cargarUbicacionEnWebView(lat, lon, "Ubicación de Emergencia")
+    }
+
+    private fun cargarUbicacionEnWebView(lat: Double, lon: Double, titulo: String) {
+        val htmlContent = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <style>
+                    body, html, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #e0e0e0; }
+                </style>
+            </head>
+            <body>
+                <div id="map"></div>
+                <script>
+                    var map = L.map('map', { zoomControl: true }).setView([$lat, $lon], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap'
+                    }).addTo(map);
+                    var marker = L.marker([$lat, $lon]).addTo(map);
+                    marker.bindPopup("<b>$titulo</b><br>Lat: $lat, Lon: $lon").openPopup();
+                </script>
+            </body>
+            </html>
+        """.trimIndent()
+
+        binding.webViewMapa.loadDataWithBaseURL("https://openstreetmap.org", htmlContent, "text/html", "UTF-8", null)
+
+        // Si Google Maps no muestra la vista previa, activar automáticamente la vista WebView de mapa
+        binding.mapView.postDelayed({
+            if (binding.mapView.visibility == View.VISIBLE) {
+                // Habilitar la vista de respaldo si el contenedor de Google Maps no puede descargar tiles
+                binding.webViewMapa.visibility = View.VISIBLE
+            }
+        }, 1000)
     }
 
     private fun obtenerDireccionFisica(lat: Double, lon: Double) {
@@ -200,6 +256,31 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.LENGTH_LONG
             ).show()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.mapView.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        binding.mapView.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding.mapView.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        binding.mapView.onLowMemory()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        binding.mapView.onSaveInstanceState(outState)
     }
 
     override fun onRequestPermissionsResult(

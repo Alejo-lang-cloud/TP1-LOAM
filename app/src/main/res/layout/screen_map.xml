@@ -62,27 +62,33 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- FRAGMENTO DE MAPA DE GOOGLE -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_map_fragment"
+    <!-- CONTENEDOR DEL MAPA (FrameLayout sin CardView opaco que bloquee el SurfaceView) -->
+    <FrameLayout
+        android:id="@+id/fl_mapa_contenedor"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="3dp"
-        app:strokeWidth="0dp"
+        android:background="#E0E0E0"
         app:layout_constraintTop_toBottomOf="@id/card_direccion"
         app:layout_constraintBottom_toTopOf="@id/ll_botones_acciones"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/map_fragment"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
+        <!-- GOOGLE MAPS MAPVIEW -->
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/map_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.google.android.material.card.MaterialCardView>
+
+        <!-- WEBVIEW DE RESPALDO CON OPENSTREETMAP (Para garantizar mapa visible si la API Key de Google está restringida o falla) -->
+        <WebView
+            android:id="@+id/web_view_mapa"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <!-- CONTENEDOR DE BOTONES DE ACCIÓN -->
     <LinearLayout
