@@ -1,14 +1,14 @@
 package com.example.appnat2
 
+import android.view.LayoutInflater
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
-import com.example.appnat2.databinding.ScreenFavoritesBinding
 
 @Composable
-fun FavoritesScreen() {
+fun PerfilScreen() {
     AndroidView(
         factory = { context ->
-            ScreenFavoritesBinding.inflate(android.view.LayoutInflater.from(context)).root
+            LayoutInflater.from(context).inflate(R.layout.screen_perfil, null)
         }
     )
 }

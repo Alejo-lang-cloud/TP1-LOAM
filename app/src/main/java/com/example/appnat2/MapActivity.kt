@@ -189,7 +189,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             )
 
             ubicacionRef.setValue(datosUbicacion).addOnSuccessListener {
-                Toast.makeText(this, "¡Ubicación de emergencia registrada en Firebase!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Ubicación de emergencia registrada en Firebase.", Toast.LENGTH_LONG).show()
             }.addOnFailureListener { e ->
                 Toast.makeText(this, "Error al guardar en Firebase: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -202,7 +202,6 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    // --- DELEGACIÓN DE TODOS LOS EVENTOS DEL CICLO DE VIDA A MAPVIEW (REQUERIDO) ---
 
     override fun onStart() {
         super.onStart()

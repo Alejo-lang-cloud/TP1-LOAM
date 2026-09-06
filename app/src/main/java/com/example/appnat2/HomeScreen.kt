@@ -8,7 +8,10 @@ import android.graphics.Color
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.BatteryManager
+import android.speech.RecognizerIntent
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +29,7 @@ import coil.load
 import com.example.appnat2.databinding.ScreenHomeBinding
 import com.example.appnat2.ui.theme.WeatherResponse
 import com.example.appnat2.ui.theme.WeatherService
+import java.util.Locale
 
 @Composable
 fun HomeScreen() {
@@ -47,6 +51,34 @@ fun HomeScreen() {
             errorMessage = when {
                 e.message?.contains("401") == true -> "Error: Clave API no válida o aún no activada"
                 else -> "Error de conexión: No se pudo cargar el clima"
+            }
+        }
+    }
+
+    fun turnOnFlashlight(binding: ScreenHomeBinding? = null) {
+        if (!isFlashOn) {
+            try {
+                val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
+                val cameraId = cameraManager?.cameraIdList?.firstOrNull { id ->
+                    try {
+                        cameraManager.getCameraCharacteristics(id)
+                            .get(CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+                    } catch (_: Exception) {
+                        false
+                    }
+                } ?: cameraManager?.cameraIdList?.firstOrNull()
+
+                if (cameraManager != null && cameraId != null) {
+                    cameraManager.setTorchMode(cameraId, true)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            isFlashOn = true
+            binding?.let {
+                it.tvEstadoLinterna.text = "Linterna encendida"
+                it.tvEstadoLinterna.setTextColor(Color.parseColor("#2E7D32"))
+                it.ivLinternaEstado.setColorFilter(Color.parseColor("#FFB300"))
             }
         }
     }
@@ -75,6 +107,41 @@ fun HomeScreen() {
                 it.tvEstadoLinterna.text = "Linterna apagada"
                 it.tvEstadoLinterna.setTextColor(Color.parseColor("#D32F2F"))
                 it.ivLinternaEstado.setColorFilter(Color.parseColor("#E65100"))
+            }
+        }
+    }
+        //Comandos por voz: "prender/encender linterna", "apagar/desactivar linterna", "abrir mapa/gps", "camara")...
+    val speechLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val matches = result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            val textSpoken = matches?.firstOrNull()?.lowercase(Locale.getDefault()) ?: ""
+
+            if (textSpoken.isNotEmpty()) {
+                when {
+                    textSpoken.contains("prender linterna") || textSpoken.contains("encender linterna") || textSpoken.contains("activar linterna") || textSpoken.contains("prender la linterna") -> {
+                        turnOnFlashlight()
+                        Toast.makeText(context, "VAlert Voz: Linterna encendida", Toast.LENGTH_SHORT).show()
+                    }
+                    textSpoken.contains("apagar linterna") || textSpoken.contains("desactivar linterna") || textSpoken.contains("apagar la linterna") -> {
+                        turnOffFlashlight()
+                        Toast.makeText(context, "VAlert Voz: Linterna apagada", Toast.LENGTH_SHORT).show()
+                    }
+                    textSpoken.contains("mapa") || textSpoken.contains("gps") || textSpoken.contains("ubicacion") || textSpoken.contains("donde estoy") -> {
+                        val intent = Intent(context, MapActivity::class.java)
+                        context.startActivity(intent)
+                        Toast.makeText(context, "VAlert Voz: Abriendo Mapa", Toast.LENGTH_SHORT).show()
+                    }
+                    textSpoken.contains("multimedia") || textSpoken.contains("camara") || textSpoken.contains("grabar") || textSpoken.contains("video") -> {
+                        val intent = Intent(context, MultimediaActivity::class.java)
+                        context.startActivity(intent)
+                        Toast.makeText(context, "VAlert Voz: Abriendo Multimedia", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        Toast.makeText(context, "Comando no reconocido: \"$textSpoken\".\nPrueba decir: 'prender linterna' o 'abrir mapa'", Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         }
     }
@@ -183,6 +250,22 @@ fun HomeScreen() {
             updateUi(isFlashOn)
 
             binding.btnLinterna.setOnClickListener { toggleFlashlight() }
+
+            val triggerVoiceCommand = {
+                val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES")
+                    putExtra(RecognizerIntent.EXTRA_PROMPT, "Di un comando (ej: 'prender linterna', 'apagar linterna', 'abrir mapa')")
+                }
+                try {
+                    speechLauncher.launch(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(ctx, "El dispositivo no soporta reconocimiento de voz", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            binding.btnVoz.setOnClickListener { triggerVoiceCommand() }
+            binding.cardBtnVoz.setOnClickListener { triggerVoiceCommand() }
 
             val openMap = {
                 val intent = Intent(ctx, MapActivity::class.java)
