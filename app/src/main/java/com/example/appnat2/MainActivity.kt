@@ -89,8 +89,8 @@ fun Appnat2App() {
             ) {
                 when (currentDestination) {
                     AppDestinations.HOME -> HomeScreen()
-                    AppDestinations.PHONE -> FavoritesScreen()
-                    AppDestinations.PROFILE -> ProfileScreen()
+                    AppDestinations.PHONE -> TelefonoScreen()
+                    AppDestinations.PROFILE -> PerfilScreen()
                 }
             }
         }

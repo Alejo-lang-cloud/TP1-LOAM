@@ -138,6 +138,14 @@ fun HomeScreen() {
                         context.startActivity(intent)
                         Toast.makeText(context, "VAlert Voz: Abriendo Multimedia", Toast.LENGTH_SHORT).show()
                     }
+                    textSpoken.contains("informacion") || textSpoken.contains("instructivo") || textSpoken.contains("guia") || textSpoken.contains("manual") -> {
+                        val intent = Intent(context, WebViewActivity::class.java).apply {
+                            putExtra("EXTRA_URL", "https://www.ready.gov/es")
+                            putExtra("EXTRA_TITULO", "Instructivos de Emergencia")
+                        }
+                        context.startActivity(intent)
+                        Toast.makeText(context, "VAlert Voz: Abriendo Instructivos de Emergencia", Toast.LENGTH_SHORT).show()
+                    }
                     else -> {
                         Toast.makeText(context, "Comando no reconocido: \"$textSpoken\".\nPrueba decir: 'prender linterna' o 'abrir mapa'", Toast.LENGTH_LONG).show()
                     }
@@ -281,6 +289,16 @@ fun HomeScreen() {
             }
             binding.btnCamara.setOnClickListener { openMultimedia() }
             binding.cardCamara.setOnClickListener { openMultimedia() }
+
+            val openInformacionWeb = {
+                val intent = Intent(ctx, WebViewActivity::class.java).apply {
+                    putExtra("EXTRA_URL", "https://www.ready.gov/es")
+                    putExtra("EXTRA_TITULO", "Instructivos de Emergencia")
+                }
+                ctx.startActivity(intent)
+            }
+            binding.btnInformacion.setOnClickListener { openInformacionWeb() }
+            binding.cardInformacion.setOnClickListener { openInformacionWeb() }
 
             binding.btnSalir.setOnClickListener {
                 turnOffFlashlight(binding)
