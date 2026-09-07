@@ -12,6 +12,7 @@ import android.speech.RecognizerIntent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -168,6 +170,7 @@ fun HomeScreen() {
     }
 
     AndroidView(
+        modifier = Modifier.fillMaxSize(),
         factory = { ctx ->
             val binding = ScreenHomeBinding.inflate(android.view.LayoutInflater.from(ctx))
 
@@ -255,6 +258,24 @@ fun HomeScreen() {
                 }
             }
 
+            // --- INICIALIZAR VISTA PREVIA DEL MAPA ---
+            binding.mapaPreview.onCreate(null)
+            binding.mapaPreview.onResume() // Necesario para que se dibuje en pantalla
+
+            binding.mapaPreview.getMapAsync { googleMap ->
+                // Usamos tus coordenadas base de MapActivity
+                val posicionInicial = com.google.android.gms.maps.model.LatLng(-36.6167, -64.2833)
+
+                googleMap.moveCamera(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(posicionInicial, 13f))
+                googleMap.addMarker(
+                    com.google.android.gms.maps.model.MarkerOptions()
+                        .position(posicionInicial)
+                        .title("Ubicación Base")
+                )
+                // Desactivamos gestos para que al tocarlo funcione como un botón
+                googleMap.uiSettings.setAllGesturesEnabled(false)
+            }
+
             updateUi(isFlashOn)
 
             binding.btnLinterna.setOnClickListener { toggleFlashlight() }
@@ -281,7 +302,7 @@ fun HomeScreen() {
             }
             binding.btnMapaVer.setOnClickListener { openMap() }
             binding.cardMapa.setOnClickListener { openMap() }
-            binding.flMapaPreview.setOnClickListener { openMap() }
+            binding.mapaPreview.setOnClickListener { openMap() }
 
             val openMultimedia = {
                 val intent = Intent(ctx, MultimediaActivity::class.java)
