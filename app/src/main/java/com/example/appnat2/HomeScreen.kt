@@ -321,6 +321,13 @@ fun HomeScreen() {
             binding.btnInformacion.setOnClickListener { openInformacionWeb() }
             binding.cardInformacion.setOnClickListener { openInformacionWeb() }
 
+            val openChatbot = {
+                val intent = Intent(ctx, ChatbotActivity::class.java)
+                ctx.startActivity(intent)
+            }
+            binding.btnChatbot.setOnClickListener { openChatbot() }
+            binding.cardBtnChatbot.setOnClickListener { openChatbot() }
+
             binding.btnSalir.setOnClickListener {
                 turnOffFlashlight(binding)
                 (ctx as? Activity)?.finish()

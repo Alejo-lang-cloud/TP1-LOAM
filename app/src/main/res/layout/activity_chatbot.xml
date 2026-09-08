@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:background="#F5F5F5"
+    tools:context=".ChatbotActivity">
+
+    <!-- BARRA SUPERIOR DE TITULO -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar_chatbot"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#1976D2"
+        app:title="Asistente VAlert"
+        app:subtitle="Respuestas para emergencias"
+        app:titleTextColor="#FFFFFF"
+        app:subtitleTextColor="#E3F2FD"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="#FFFFFF" />
+
+    <!-- LISTA DE MENSAJES DE CHAT -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_chat_messages"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="12dp"
+        android:clipToPadding="false"
+        tools:listitem="@layout/item_chat_message" />
+
+    <!-- CHIPS DE SUGERENCIAS RÁPIDAS -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chip_group_sugerencias"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleLine="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_sismo"
+                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="¿Qué hacer en sismo?"
+                app:chipBackgroundColor="#E3F2FD"
+                app:chipIcon="@drawable/ic_instructivos"
+                app:chipIconTint="#1976D2" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_incendio"
+                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="¿Cómo actuar en incendio?"
+                app:chipBackgroundColor="#E3F2FD"
+                app:chipIcon="@drawable/ic_fire"
+                app:chipIconTint="#1976D2" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_inundacion"
+                style="@style/Widget.MaterialComponents.Chip.Action"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Inundaciones"
+                app:chipBackgroundColor="#E3F2FD"
+                app:chipIcon="@drawable/ic_instructivos"
+                app:chipIconTint="#1976D2" />
+
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <!-- ÁREA DE INGRESO DE TEXTO Y BOTÓN ENVIAR -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="#FFFFFF"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/et_user_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="48dp"
+            android:paddingHorizontal="16dp"
+            android:hint="Escribe una pregunta..."
+            android:textColor="#222222"
+            android:textSize="15sp"
+            android:background="@null"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLines="3" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_send_chat"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:backgroundTint="#1976D2"
+            app:icon="@android:drawable/ic_menu_send"
+            app:iconTint="#FFFFFF"
+            android:contentDescription="Enviar mensaje" />
+
+    </LinearLayout>
+
+</LinearLayout>

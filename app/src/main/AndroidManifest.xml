@@ -59,6 +59,13 @@
             android:label="Instructivos"
             android:theme="@style/Theme.Appnat2" />
 
+        <activity
+            android:name=".ChatbotActivity"
+            android:exported="false"
+            android:label="Asistente Chatbot"
+            android:theme="@style/Theme.Appnat2"
+            android:windowSoftInputMode="adjustResize" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

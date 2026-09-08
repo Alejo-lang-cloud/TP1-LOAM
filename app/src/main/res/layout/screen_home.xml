@@ -408,13 +408,15 @@
         </com.google.android.material.card.MaterialCardView>
 
         <!-- FILA INFERIOR: BOTÓN DE VOZ (CIRCULAR) + BOTÓN DE SALIDA -->
+        <!-- FILA INFERIOR: BOTÓN DE VOZ (IZQUIERDA) + BOTÓN DE SALIDA (CENTRO) + BOTÓN CHATBOT (DERECHA) -->
+
+        <!-- Botón de Voz (Circular - Izquierda) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_btn_voz"
             android:layout_width="54dp"
             android:layout_height="54dp"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="24dp"
-            android:layout_marginEnd="10dp"
             app:cardCornerRadius="27dp"
             app:cardElevation="6dp"
             app:cardBackgroundColor="#FFFFFF"
@@ -437,23 +439,55 @@
                 android:contentDescription="Comandos de Voz" />
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Botón de Salida (Centro - Ajustado entre Voz y Chatbot) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_salir"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:layout_marginBottom="24dp"
-            android:backgroundTint="#D32F2F"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:minHeight="58dp"
             android:text="Salir"
-            android:textColor="#FFFFFF"
             android:textSize="16sp"
+            android:backgroundTint="#D32F2F"
+            android:textColor="#FFFFFF"
             app:icon="@android:drawable/ic_menu_close_clear_cancel"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/card_btn_voz"
             app:layout_constraintTop_toBottomOf="@id/card_linterna"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintStart_toEndOf="@id/card_btn_voz"
+            app:layout_constraintEnd_toStartOf="@id/card_btn_chatbot" />
+
+        <!-- Botón Chatbot (Circular - Derecha, Espejado con Botón Voz) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_btn_chatbot"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="27dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:strokeWidth="0dp"
+            app:layout_constraintTop_toBottomOf="@id/card_linterna"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_salir"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:id="@+id/btn_chatbot"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp"
+                android:src="@drawable/ic_chat"
+                app:tint="#1976D2"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Asistente Chatbot" />
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
