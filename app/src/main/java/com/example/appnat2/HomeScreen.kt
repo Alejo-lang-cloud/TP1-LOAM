@@ -7,7 +7,14 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.media.RingtoneManager
 import android.os.BatteryManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.speech.RecognizerIntent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -31,6 +38,9 @@ import coil.load
 import com.example.appnat2.databinding.ScreenHomeBinding
 import com.example.appnat2.ui.theme.WeatherResponse
 import com.example.appnat2.ui.theme.WeatherService
+import com.google.firebase.database.FirebaseDatabase
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 @Composable
@@ -112,7 +122,7 @@ fun HomeScreen() {
             }
         }
     }
-        //Comandos por voz: "prender/encender linterna", "apagar/desactivar linterna", "abrir mapa/gps", "camara")...
+
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -258,12 +268,119 @@ fun HomeScreen() {
                 }
             }
 
+            fun ejecutarAlarmaCatastrofe() {
+                // 1. VIBRACIÓN (9 segundos)
+                try {
+                    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val vibratorManager = ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager
+                        vibratorManager?.defaultVibrator
+                    } else {
+                        @Suppress("DEPRECATION")
+                        ctx.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        vibrator?.vibrate(VibrationEffect.createOneShot(9000, VibrationEffect.DEFAULT_AMPLITUDE))
+                    } else {
+                        @Suppress("DEPRECATION")
+                        vibrator?.vibrate(9000)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                // 2. SONIDO IRRITANTE DE ALARMA (9 segundos)
+                var ringtone: android.media.Ringtone? = null
+                try {
+                    val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+                    ringtone = RingtoneManager.getRingtone(ctx, alarmUri)
+                    ringtone?.play()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                // 3. EFECTO DE LUCES EN LA APP (Destellos durante 9 segundos)
+                val mainHandler = Handler(Looper.getMainLooper())
+                var flashCount = 0
+                val originalBgColor = Color.parseColor("#F5F5F5")
+
+                val flashRunnable = object : Runnable {
+                    override fun run() {
+                        if (flashCount < 18) {
+                            val color = if (flashCount % 3 == 0) {
+                                Color.parseColor("#FFD54F")
+                            } else if (flashCount % 3 == 1) {
+                                Color.parseColor("#E53935")
+                            } else {
+                                Color.parseColor("#FFFFFF")
+                            }
+                            binding.root.setBackgroundColor(color)
+                            flashCount++
+                            mainHandler.postDelayed(this, 500)
+                        } else {
+                            binding.root.setBackgroundColor(originalBgColor)
+                            try { ringtone?.stop() } catch (_: Exception) {}
+                        }
+                    }
+                }
+                mainHandler.post(flashRunnable)
+
+                // Actualizar estado en Firebase
+                try {
+                    val database = FirebaseDatabase.getInstance()
+                    database.getReference("evento_Catastrofe").child("estado").setValue("ACTIVADO")
+                } catch (_: Exception) {}
+
+                // Diálogo de Emergencia
+                try {
+                    androidx.appcompat.app.AlertDialog.Builder(ctx)
+                        .setTitle("⚠️ ALERTA DE CATÁSTROFE!")
+                        .setMessage("¡BUSQUE REFUGIO Y MANTÉNGASE A SALVO!")
+                        .setPositiveButton("ENTENDIDO") { dialog, _ ->
+                            dialog.dismiss()
+                            try { ringtone?.stop() } catch (_: Exception) {}
+                            binding.root.setBackgroundColor(originalBgColor)
+                        }
+                        .setCancelable(false)
+                        .show()
+                } catch (_: Exception) {}
+            }
+
+            fun programarSimulacionCatastrofe() {
+                val scheduledTime = System.currentTimeMillis() + 60_000
+                val fechaTexto = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(scheduledTime))
+
+                try {
+                    val database = FirebaseDatabase.getInstance()
+                    val ref = database.getReference("evento_Catastrofe")
+                    val eventData = hashMapOf(
+                        "fecha_hora_programada" to scheduledTime,
+                        "fecha_hora_texto" to fechaTexto,
+                        "estado" to "PENDIENTE",
+                        "tipo" to "Simulación de Catástrofe Natural"
+                    )
+                    ref.setValue(eventData)
+                    Toast.makeText(ctx, "⚠️ Catástrofe programada en Firebase (+1 min: $fechaTexto)", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(ctx, "Error al registrar en Firebase", Toast.LENGTH_SHORT).show()
+                }
+
+                // Programar activación exacta a 1 minuto
+                val handler = Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    ejecutarAlarmaCatastrofe()
+                }, 60_000)
+            }
+
+            binding.btnCatastrofe.setOnClickListener { programarSimulacionCatastrofe() }
+            binding.cardBtnCatastrofe.setOnClickListener { programarSimulacionCatastrofe() }
+
             // --- INICIALIZAR VISTA PREVIA DEL MAPA ---
             binding.mapaPreview.onCreate(null)
-            binding.mapaPreview.onResume() // Necesario para que se dibuje en pantalla
+            binding.mapaPreview.onResume()
 
             binding.mapaPreview.getMapAsync { googleMap ->
-                // Usamos tus coordenadas base de MapActivity
                 val posicionInicial = com.google.android.gms.maps.model.LatLng(-36.6167, -64.2833)
 
                 googleMap.moveCamera(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(posicionInicial, 13f))
@@ -272,7 +389,6 @@ fun HomeScreen() {
                         .position(posicionInicial)
                         .title("Ubicación Base")
                 )
-                // Desactivamos gestos para que al tocarlo funcione como un botón
                 googleMap.uiSettings.setAllGesturesEnabled(false)
             }
 

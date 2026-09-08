@@ -7,7 +7,6 @@ import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.MediaStore
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,8 +33,8 @@ class MultimediaActivity : AppCompatActivity() {
     ) { isGranted ->
         if (isGranted) {
             when (pendingAction) {
-                ActionType.VIDEO_FRONTAL -> launchVideoRecorder()
-                ActionType.VIDEO_SELFIE -> launchVideoRecorder()
+                ActionType.VIDEO_FRONTAL -> launchCameraRecorder(isSelfie = false)
+                ActionType.VIDEO_SELFIE -> launchCameraRecorder(isSelfie = true)
                 ActionType.AUDIO_MIC -> toggleAudioRecording()
                 null -> {}
             }
@@ -43,18 +42,6 @@ class MultimediaActivity : AppCompatActivity() {
             Toast.makeText(this, "Permiso denegado", Toast.LENGTH_SHORT).show()
         }
         pendingAction = null
-    }
-
-    private val videoLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            Toast.makeText(
-                this,
-                "Video grabado y guardado exitosamente en el dispositivo",
-                Toast.LENGTH_LONG
-            ).show()
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,13 +55,13 @@ class MultimediaActivity : AppCompatActivity() {
 
         binding.btnVideoFrontal.setOnClickListener {
             checkPermissionAndRun(Manifest.permission.CAMERA, ActionType.VIDEO_FRONTAL) {
-                launchVideoRecorder()
+                launchCameraRecorder(isSelfie = false)
             }
         }
 
         binding.btnVideoSelfie.setOnClickListener {
             checkPermissionAndRun(Manifest.permission.CAMERA, ActionType.VIDEO_SELFIE) {
-                launchVideoRecorder()
+                launchCameraRecorder(isSelfie = true)
             }
         }
 
@@ -94,14 +81,12 @@ class MultimediaActivity : AppCompatActivity() {
         }
     }
 
-    private fun launchVideoRecorder() {
-        val intent = Intent(MediaStore.ACTION_VIDEO_CAPTURE).apply {
-            putExtra("android.intent.extras.CAMERA_FACING", 1)
-            putExtra("android.intent.extras.LENS_FACING_FRONT", 1)
-            putExtra("android.intent.extra.USE_FRONT_CAMERA", true)
-        }
+    private fun launchCameraRecorder(isSelfie: Boolean) {
         try {
-            videoLauncher.launch(intent)
+            val intent = Intent(this, CameraRecorderActivity::class.java).apply {
+                putExtra("USE_FRONT_CAMERA", isSelfie)
+            }
+            startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "No se pudo abrir la cámara de video", Toast.LENGTH_SHORT).show()

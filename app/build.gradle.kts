@@ -73,4 +73,12 @@ dependencies {
 
     // Firebase Realtime Database
     implementation("com.google.firebase:firebase-database-ktx:21.0.0")
+
+    // CameraX para captura directa garantizada de cámara frontal/selfie y trasera
+    val cameraXVersion = "1.3.4"
+    implementation("androidx.camera:camera-core:$cameraXVersion")
+    implementation("androidx.camera:camera-camera2:$cameraXVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraXVersion")
+    implementation("androidx.camera:camera-video:$cameraXVersion")
+    implementation("androidx.camera:camera-view:$cameraXVersion")
 }
