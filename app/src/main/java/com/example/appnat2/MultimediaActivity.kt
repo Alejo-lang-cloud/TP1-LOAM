@@ -32,7 +32,7 @@ class MultimediaActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            when (pendingAction) {
+            when (pendingAction) { //una vez que tenemos permisos a la camara, vemos si es selfie o no
                 ActionType.VIDEO_FRONTAL -> launchCameraRecorder(isSelfie = false)
                 ActionType.VIDEO_SELFIE -> launchCameraRecorder(isSelfie = true)
                 ActionType.AUDIO_MIC -> toggleAudioRecording()
@@ -82,7 +82,7 @@ class MultimediaActivity : AppCompatActivity() {
     }
 
     private fun launchCameraRecorder(isSelfie: Boolean) {
-        try {
+        try { //abre el activity para camerarecorder y le pasa front_camera
             val intent = Intent(this, CameraRecorderActivity::class.java).apply {
                 putExtra("USE_FRONT_CAMERA", isSelfie)
             }
@@ -106,7 +106,7 @@ class MultimediaActivity : AppCompatActivity() {
             val storageDir = getExternalFilesDir(Environment.DIRECTORY_MUSIC) ?: filesDir
             val audioFile = File.createTempFile("AUDIO_ALERTA_", ".m4a", storageDir)
 
-            mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { //para grabar el audio
                 MediaRecorder(this)
             } else {
                 @Suppress("DEPRECATION")
@@ -130,7 +130,7 @@ class MultimediaActivity : AppCompatActivity() {
         }
     }
 
-    private fun stopAudioRecording() {
+    private fun stopAudioRecording() { //comenzamos la grabación de audio
         try {
             mediaRecorder?.apply {
                 stop()
@@ -147,7 +147,7 @@ class MultimediaActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStop() {
+    override fun onStop() { //detiene la grabación de audio
         super.onStop()
         if (isAudioRecording) {
             stopAudioRecording()

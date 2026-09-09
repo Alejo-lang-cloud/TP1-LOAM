@@ -21,7 +21,7 @@ data class WeatherInfo(
     val icon: String
 )
 
-interface WeatherService {
+interface WeatherService { //implementación de la interface del servicio del clima, usa OpenWeather API
     @GET("weather")
     suspend fun getCurrentWeather(
         @Query("q") city: String,

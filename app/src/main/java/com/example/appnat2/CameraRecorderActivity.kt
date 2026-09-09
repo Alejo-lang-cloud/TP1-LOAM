@@ -41,7 +41,7 @@ class CameraRecorderActivity : AppCompatActivity() {
     private lateinit var tvCameraTitle: TextView
     private lateinit var tvRecordingTimer: TextView
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) { //usamos CameraX
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera_recorder)
 
@@ -51,7 +51,7 @@ class CameraRecorderActivity : AppCompatActivity() {
         tvRecordingTimer = findViewById(R.id.tv_recording_timer)
         val btnBackCamera = findViewById<ImageButton>(R.id.btn_back_camera)
 
-        isFrontCamera = intent.getBooleanExtra("USE_FRONT_CAMERA", true)
+        isFrontCamera = intent.getBooleanExtra("USE_FRONT_CAMERA", true) //si es camara frontal, la usamos
 
         tvCameraTitle.text = if (isFrontCamera) "Grabar Video Selfie (Frontal)" else "Grabar Video Principal (Trasero)"
 
@@ -128,7 +128,7 @@ class CameraRecorderActivity : AppCompatActivity() {
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, if (isFrontCamera) "VIDEO_SELFIE_$name" else "VIDEO_PRINCIPAL_$name")
             put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { //guardamos los videos en el celular, en la carpeta movies/valert
                 put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/VAlert")
             }
         }

@@ -34,12 +34,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStop() {
+    override fun onStop() { //apagamos la linterna si VAlert pasa a segundo plano (ej abrir otra app)
         super.onStop()
         turnOffTorch()
     }
 
-    override fun onDestroy() {
+    override fun onDestroy() { //apagamos la linterna al salir de la app (matamos el proceso de VAlert)
         super.onDestroy()
         turnOffTorch()
     }
@@ -58,10 +58,10 @@ class MainActivity : ComponentActivity() {
 
 @PreviewScreenSizes
 @Composable
-fun Appnat2App() {
+fun Appnat2App() { //el destino por defecto es el Home, y currentDestination me dice en cual me encuentro
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
-    NavigationSuiteScaffold(
+    NavigationSuiteScaffold( //genera el menu de navegación, para cada icono se le asigna currentDestination, asi desde la home accedemos a linterna, camara, etc.
         navigationSuiteItems = {
             AppDestinations.entries.forEach {
                 item(
@@ -86,7 +86,7 @@ fun Appnat2App() {
                         top = innerPadding.calculateTopPadding(),
                         bottom = innerPadding.calculateBottomPadding()
                     )
-            ) {
+            ) { //cuando necesito moverme entre las tres secciones principales HOME - TELEFONO - PERFIL
                 when (currentDestination) {
                     AppDestinations.HOME -> HomeScreen()
                     AppDestinations.PHONE -> TelefonoScreen()
@@ -97,7 +97,7 @@ fun Appnat2App() {
     }
 }
 
-enum class AppDestinations(
+enum class AppDestinations( //enumerado con los destinos de la App, HOME, PHONE, PROFILE
     val label: String,
     val icon: Int,
 ) {

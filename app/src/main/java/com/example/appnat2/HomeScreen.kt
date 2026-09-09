@@ -49,8 +49,8 @@ import java.util.Locale
 @Composable
 fun HomeScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    var isFlashOn by rememberSaveable { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current //para el ciclo de vida de la linterna
+    var isFlashOn by rememberSaveable { mutableStateOf(false) } //estado de la linterna, apagada por defecto
 
     var weatherData by remember { mutableStateOf<WeatherResponse?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -85,9 +85,9 @@ fun HomeScreen() {
             )
         }
 
-        try {
+        try { //creamos en la variable service un weatherservice y usamos la API Key
             val service = WeatherService.create()
-            val response = service.getCurrentWeather("Santa Rosa, LP, AR", "cb3bf36ed870f1ba1b006446093e04e9")
+            val response = service.getCurrentWeather("General Pico, LP, AR", "cb3bf36ed870f1ba1b006446093e04e9")
             weatherData = response
             errorMessage = null
         } catch (e: Exception) {
@@ -99,9 +99,9 @@ fun HomeScreen() {
         }
     }
 
-    fun turnOnFlashlight(binding: ScreenHomeBinding? = null) {
+    fun turnOnFlashlight(binding: ScreenHomeBinding? = null) { //enciende la linterna
         if (!isFlashOn) {
-            try {
+            try { //accedemos a los servicios de la camara
                 val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
                 val cameraId = cameraManager?.cameraIdList?.firstOrNull { id ->
                     try {
@@ -119,7 +119,7 @@ fun HomeScreen() {
                 e.printStackTrace()
             }
             isFlashOn = true
-            binding?.let {
+            binding?.let { //mostramos en pantalla el cartel de que esta encendida y cambios los colores del icono de linterna
                 it.tvEstadoLinterna.text = "Linterna encendida"
                 it.tvEstadoLinterna.setTextColor(Color.parseColor("#2E7D32"))
                 it.ivLinternaEstado.setColorFilter(Color.parseColor("#FFB300"))
@@ -127,7 +127,7 @@ fun HomeScreen() {
         }
     }
 
-    fun turnOffFlashlight(binding: ScreenHomeBinding? = null) {
+    fun turnOffFlashlight(binding: ScreenHomeBinding? = null) { //apagamos la linterna
         if (isFlashOn) {
             try {
                 val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
@@ -198,7 +198,7 @@ fun HomeScreen() {
         }
     }
 
-    DisposableEffect(lifecycleOwner) {
+    DisposableEffect(lifecycleOwner) { //observa si el evento STOP/PAUSE se ejecuta para apagar la linterna
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_STOP || event == Lifecycle.Event.ON_PAUSE) {
                 turnOffFlashlight()
@@ -213,7 +213,7 @@ fun HomeScreen() {
 
     AndroidView(
         modifier = Modifier.fillMaxSize(),
-        factory = { ctx ->
+        factory = { ctx -> //con Inflate convertimos el archivo de diseño XML en objetos vista (view) para que interactuen con el codigo y se vean en pantalla
             val binding = ScreenHomeBinding.inflate(android.view.LayoutInflater.from(ctx))
 
             fun updateUi(enabled: Boolean) {
@@ -228,7 +228,7 @@ fun HomeScreen() {
                 }
             }
 
-            fun updateBattery(intent: Intent?) {
+            fun updateBattery(intent: Intent?) {//funcion para la actualizaicón de la bateria
                 val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
                 val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
                 val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
@@ -243,13 +243,13 @@ fun HomeScreen() {
 
                 binding.tvBateriaNivel.text = "$pct%"
 
-                if (isCharging) {
+                if (isCharging) { //si esta cargando, mostramos por pantalla
                     binding.tvBateriaEstimacion.text = "(Cargando)"
                     binding.tvBateriaEstimacion.setTextColor(Color.parseColor("#2E7D32"))
-                } else {
+                } else { //matemática aproximada para los minutos faltantes segun el % de bateria
                     val remainingMinutes = pct * 5
-                    val hours = remainingMinutes / 60
-                    val mins = remainingMinutes % 60
+                    val hours = remainingMinutes / 60 //horas
+                    val mins = remainingMinutes % 60 //minutos
 
                     val timeText = when {
                         hours > 0 && mins > 0 -> "(${hours}hr ${mins}min)"
@@ -300,7 +300,7 @@ fun HomeScreen() {
                 }
             }
 
-            fun ejecutarAlarmaCatastrofe() {
+            fun ejecutarAlarmaCatastrofe() { //accedemos a los permisos del administrador de vibrador
                 // 1. VIBRACIÓN (9 segundos)
                 try {
                     val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -321,6 +321,7 @@ fun HomeScreen() {
                 }
 
                 // 2. SONIDO IRRITANTE DE ALARMA DE EMERGENCIA (9 segundos)
+                // sonido de alarma..
                 var ringtone: android.media.Ringtone? = null
                 var toneGenerator: android.media.ToneGenerator? = null
 
@@ -348,7 +349,7 @@ fun HomeScreen() {
                     e.printStackTrace()
                 }
 
-                // 3. EFECTO DE LUCES EN LA APP (Destellos durante 9 segundos)
+                // EFECTO DE LUCES EN LA APP (Destellos durante 9 segundos)
                 val mainHandler = Handler(Looper.getMainLooper())
                 var flashCount = 0
                 val originalBgColor = Color.parseColor("#F5F5F5")
@@ -375,11 +376,6 @@ fun HomeScreen() {
                 }
                 mainHandler.post(flashRunnable)
 
-                // Actualizar estado en Firebase
-                try {
-                    val database = FirebaseDatabase.getInstance()
-                    database.getReference("evento_Catastrofe").child("estado").setValue("ACTIVADO")
-                } catch (_: Exception) {}
 
                 // Diálogo de Emergencia
                 try {
@@ -397,7 +393,7 @@ fun HomeScreen() {
                 } catch (_: Exception) {}
             }
 
-            fun programarSimulacionCatastrofe() {
+            fun programarSimulacionCatastrofe() { //creamos en la Firebase una simulación de catastrofe
                 val scheduledTime = System.currentTimeMillis() + 60_000
                 val fechaTexto = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(scheduledTime))
 
@@ -457,6 +453,8 @@ fun HomeScreen() {
             updateUi(isFlashOn)
 
             binding.btnLinterna.setOnClickListener { toggleFlashlight() }
+
+            // COMANDO POR VOZ: reconoce con RECOGNIZE_SPEECH y luego compara el texto con textSpoken.contains
 
             val triggerVoiceCommand = {
                 val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -536,13 +534,13 @@ fun HomeScreen() {
             binding.root
         },
         update = { view ->
-            val binding = ScreenHomeBinding.bind(view)
+            val binding = ScreenHomeBinding.bind(view) //aca usamos viewbinding para bindear los elementos de XML y poder manejarlos
 
             if (errorMessage != null) {
                 binding.tvClimaTemperatura.text = "--"
                 binding.tvClimaDescripcion.text = errorMessage
                 binding.tvClimaUbicacion.text = "Error"
-            } else if (weatherData != null) {
+            } else if (weatherData != null) { //respuestas de la API del clima, temp, descripcion, ubicacion
                 weatherData?.let { data ->
                     binding.tvClimaTemperatura.text = "${data.main.temp.toInt()}°C"
                     binding.tvClimaDescripcion.text = data.weather.firstOrNull()?.description?.replaceFirstChar { it.uppercase() } ?: ""
@@ -555,7 +553,7 @@ fun HomeScreen() {
                     }
                 }
             } else {
-                binding.tvClimaTemperatura.text = "..."
+                binding.tvClimaTemperatura.text = "..." //bindeamos con el xml screen_home para que se actualice
                 binding.tvClimaDescripcion.text = "Cargando clima..."
             }
 

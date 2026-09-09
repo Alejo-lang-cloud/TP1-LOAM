@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class ChatMessage(
+data class ChatMessage( //estructural principal del chat
     val text: String,
     val isUser: Boolean,
     val timestamp: String
@@ -36,7 +36,7 @@ class ChatbotActivity : AppCompatActivity() {
     private lateinit var etInput: EditText
     private lateinit var btnSend: MaterialButton
     private lateinit var adapter: ChatAdapter
-    private val messagesList = mutableListOf<ChatMessage>()
+    private val messagesList = mutableListOf<ChatMessage>() //aca tenemos guardados los mensajes del bot
 
     // Variable global en la Activity para guardar las respuestas de Firebase en memoria
     private val diccionarioBot = mutableMapOf<String, String>()
@@ -61,7 +61,7 @@ class ChatbotActivity : AppCompatActivity() {
         }
         rvMessages.adapter = adapter
 
-        // Cargar respuestas dinámicas desde Firebase Realtime Database
+        // El chatbot consulta las respuestas cargadas en la firebase
         cargarRespuestasDelBot()
 
         // Mensaje de bienvenida inicial del Bot
@@ -104,7 +104,7 @@ class ChatbotActivity : AppCompatActivity() {
             val database = FirebaseDatabase.getInstance()
             val botRef = database.getReference("chatbot_respuestas")
 
-            // Usamos get() para leer los datos UNA sola vez, ahorrando ancho de banda
+            // Usamos get() para leer los datos UNA sola vez
             botRef.get().addOnSuccessListener { snapshot ->
                 if (snapshot.exists()) {
                     for (hijo in snapshot.children) {

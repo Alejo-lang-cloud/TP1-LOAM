@@ -86,7 +86,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 .title("Santa Rosa, La Pampa")
         )
 
-        obtenerDireccionFisica(latitudActual, longitudActual)
+        obtenerDireccionFisica(latitudActual, longitudActual) //utilizamos geocoder para convertir latitud y longitud en una direccion legible
         verificarGpsyObtenerUbicacion()
     }
 
@@ -160,12 +160,14 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun obtenerDireccionFisica(lat: Double, lon: Double) {
+        //obtenemos las coordenadas mediante el GPS y después hacemos geocodificación inversa para
+        // transformar las coordenadas en una dirección que pueda leer el usuario
         try {
             val geocoder = Geocoder(this, Locale.getDefault())
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 geocoder.getFromLocation(lat, lon, 1) { direcciones ->
                     runOnUiThread {
-                        if (direcciones.isNotEmpty()) {
+                        if (direcciones.isNotEmpty()) { //mostramos las direcciones
                             direccionActualText = direcciones[0].getAddressLine(0) ?: "Dirección no disponible"
                             binding.tvDireccionGrande.text = direccionActualText
                         } else {
@@ -212,9 +214,9 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             return
         }
 
-        try {
+        try { //una vez que se garantizan los permisos, obtenemos los datos y los guardamos en la bd
             val database = FirebaseDatabase.getInstance()
-            val ubicacionRef = database.getReference("ubicaciones_siniestros").push()
+            val ubicacionRef = database.getReference("ubicaciones_siniestros").push() //registro de ubicaciones
 
             val datosUbicacion = hashMapOf(
                 "latitud" to latitudActual,
@@ -222,7 +224,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
                 "direccion" to direccionActualText,
                 "timestamp" to System.currentTimeMillis()
             )
-
+            //guardado de ubicacion en la firebase
             ubicacionRef.setValue(datosUbicacion).addOnSuccessListener {
                 Toast.makeText(this, "Ubicación de emergencia registrada en Firebase.", Toast.LENGTH_LONG).show()
             }.addOnFailureListener { e ->
@@ -282,7 +284,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 verificarGpsyObtenerUbicacion()
-            } else {
+            } else { //mostramos un toast text si no se garantiza el acceso a la ubicacion
                 binding.tvDireccionGrande.text = "ERROR: Permiso de Ubicación Denegado"
                 Toast.makeText(this, "⚠️ Error: Permiso de ubicación denegado por el usuario", Toast.LENGTH_LONG).show()
                 try {

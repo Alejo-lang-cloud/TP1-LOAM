@@ -34,7 +34,7 @@ class WebViewActivity : AppCompatActivity() {
         toolbarWeb.setNavigationOnClickListener {
             finish()
         }
-
+        //mandamos la URL de la pagina
         val url = intent.getStringExtra("EXTRA_URL") ?: "https://www.ready.gov/es"
         val titulo = intent.getStringExtra("EXTRA_TITULO") ?: "Instructivos de Emergencia"
 
@@ -46,7 +46,7 @@ class WebViewActivity : AppCompatActivity() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                progressBarWeb.visibility = View.VISIBLE
+                progressBarWeb.visibility = View.VISIBLE //barra de carga de la pagina
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
