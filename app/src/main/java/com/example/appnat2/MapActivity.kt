@@ -104,11 +104,31 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
+
+            binding.tvDireccionGrande.text = "ERROR: Permiso de Ubicación Denegado"
+            Toast.makeText(this, "⚠️ Error: Permiso de ubicación no otorgado", Toast.LENGTH_LONG).show()
+
+            try {
+                androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("⚠️ Error de Permiso de Ubicación")
+                    .setMessage("No se puede detectar tu ubicación en el mapa porque el permiso de acceso al GPS no fue concedido. Por favor otorga el permiso de ubicación.")
+                    .setPositiveButton("SOLICITAR PERMISO") { dialog, _ ->
+                        dialog.dismiss()
+                        ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                            LOCATION_PERMISSION_REQUEST_CODE
+                        )
+                    }
+                    .setNegativeButton("CANCELAR", null)
+                    .show()
+            } catch (_: Exception) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                    LOCATION_PERMISSION_REQUEST_CODE
+                )
+            }
             return
         }
 
@@ -172,6 +192,21 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun registrarUbicacionEnFirebase() {
+        val hasFine = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasFine && !hasCoarse) {
+            Toast.makeText(this, "⚠️ Error: Imposible registrar en Firebase. Permiso de ubicación denegado.", Toast.LENGTH_LONG).show()
+            try {
+                androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("⚠️ Error al Registrar Ubicación")
+                    .setMessage("No se puede registrar la locación en Firebase porque no se concedieron los permisos de GPS al celular.")
+                    .setPositiveButton("ENTENDIDO", null)
+                    .show()
+            } catch (_: Exception) {}
+            return
+        }
+
         if (latitudActual == 0.0 && longitudActual == 0.0) {
             Toast.makeText(this, "Aún no hay una ubicación válida para registrar", Toast.LENGTH_SHORT).show()
             return
@@ -248,7 +283,15 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 verificarGpsyObtenerUbicacion()
             } else {
-                Toast.makeText(this, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
+                binding.tvDireccionGrande.text = "ERROR: Permiso de Ubicación Denegado"
+                Toast.makeText(this, "⚠️ Error: Permiso de ubicación denegado por el usuario", Toast.LENGTH_LONG).show()
+                try {
+                    androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("⚠️ Error de Ubicación")
+                        .setMessage("No se otorgaron permisos de GPS. No es posible detectar tus coordenadas ni mostrar tu posición en el mapa.")
+                        .setPositiveButton("ENTENDIDO", null)
+                        .show()
+                } catch (_: Exception) {}
             }
         }
     }

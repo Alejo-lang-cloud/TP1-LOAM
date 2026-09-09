@@ -1,9 +1,11 @@
 package com.example.appnat2
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -19,6 +21,7 @@ import android.speech.RecognizerIntent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -52,7 +55,36 @@ fun HomeScreen() {
     var weatherData by remember { mutableStateOf<WeatherResponse?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+
+        if (fineGranted || coarseGranted) {
+            Toast.makeText(context, "Permisos de ubicación concedidos", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "⚠️ Permiso de ubicación no concedido", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     LaunchedEffect(Unit) {
+        val hasFine = ActivityCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val hasCoarse = ActivityCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasFine && !hasCoarse) {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+
         try {
             val service = WeatherService.create()
             val response = service.getCurrentWeather("Santa Rosa, LP, AR", "cb3bf36ed870f1ba1b006446093e04e9")
@@ -399,15 +431,26 @@ fun HomeScreen() {
             binding.mapaPreview.onCreate(null)
             binding.mapaPreview.onResume()
 
+            val tienePermisoUbicacion = ActivityCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                    ActivityCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
             binding.mapaPreview.getMapAsync { googleMap ->
                 val posicionInicial = com.google.android.gms.maps.model.LatLng(-36.6167, -64.2833)
 
                 googleMap.moveCamera(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(posicionInicial, 13f))
-                googleMap.addMarker(
-                    com.google.android.gms.maps.model.MarkerOptions()
-                        .position(posicionInicial)
-                        .title("Ubicación Base")
-                )
+                if (tienePermisoUbicacion) {
+                    googleMap.addMarker(
+                        com.google.android.gms.maps.model.MarkerOptions()
+                            .position(posicionInicial)
+                            .title("Ubicación Base")
+                    )
+                } else {
+                    googleMap.addMarker(
+                        com.google.android.gms.maps.model.MarkerOptions()
+                            .position(posicionInicial)
+                            .title("⚠️ Error: Permiso de GPS denegado")
+                    )
+                }
                 googleMap.uiSettings.setAllGesturesEnabled(false)
             }
 
@@ -432,8 +475,30 @@ fun HomeScreen() {
             binding.cardBtnVoz.setOnClickListener { triggerVoiceCommand() }
 
             val openMap = {
-                val intent = Intent(ctx, MapActivity::class.java)
-                ctx.startActivity(intent)
+                val hasFine = ActivityCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                val hasCoarse = ActivityCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+                if (!hasFine && !hasCoarse) {
+                    Toast.makeText(ctx, "⚠️ Error: Permiso de ubicación denegado. Conceda acceso al GPS.", Toast.LENGTH_LONG).show()
+                    try {
+                        androidx.appcompat.app.AlertDialog.Builder(ctx)
+                            .setTitle("⚠️ Error de Permiso de Ubicación")
+                            .setMessage("No es posible mostrar la ubicación en el mapa porque el usuario no permitió el acceso al GPS de este celular. Por favor otorga el permiso de ubicación.")
+                            .setPositiveButton("IR AL MAPA") { dialog, _ ->
+                                dialog.dismiss()
+                                val intent = Intent(ctx, MapActivity::class.java)
+                                ctx.startActivity(intent)
+                            }
+                            .setNegativeButton("CANCELAR", null)
+                            .show()
+                    } catch (_: Exception) {
+                        val intent = Intent(ctx, MapActivity::class.java)
+                        ctx.startActivity(intent)
+                    }
+                } else {
+                    val intent = Intent(ctx, MapActivity::class.java)
+                    ctx.startActivity(intent)
+                }
             }
             binding.btnMapaVer.setOnClickListener { openMap() }
             binding.cardMapa.setOnClickListener { openMap() }
