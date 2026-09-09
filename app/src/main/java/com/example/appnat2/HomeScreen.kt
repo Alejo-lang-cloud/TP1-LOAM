@@ -288,13 +288,30 @@ fun HomeScreen() {
                     e.printStackTrace()
                 }
 
-                // 2. SONIDO IRRITANTE DE ALARMA (9 segundos)
+                // 2. SONIDO IRRITANTE DE ALARMA DE EMERGENCIA (9 segundos)
                 var ringtone: android.media.Ringtone? = null
+                var toneGenerator: android.media.ToneGenerator? = null
+
                 try {
                     val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                         ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-                    ringtone = RingtoneManager.getRingtone(ctx, alarmUri)
-                    ringtone?.play()
+
+                    if (alarmUri != null) {
+                        ringtone = RingtoneManager.getRingtone(ctx, alarmUri)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            ringtone?.isLooping = true
+                        }
+                        ringtone?.play()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+                // Generador de tono de emergencia a máximo volumen (Garantiza sonido fuerte)
+                try {
+                    toneGenerator = android.media.ToneGenerator(android.media.AudioManager.STREAM_ALARM, 100)
+                    toneGenerator.startTone(android.media.ToneGenerator.TONE_CDMA_EMERGENCY_RINGBACK, 9000)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -320,6 +337,7 @@ fun HomeScreen() {
                         } else {
                             binding.root.setBackgroundColor(originalBgColor)
                             try { ringtone?.stop() } catch (_: Exception) {}
+                            try { toneGenerator?.stopTone(); toneGenerator?.release() } catch (_: Exception) {}
                         }
                     }
                 }
@@ -339,6 +357,7 @@ fun HomeScreen() {
                         .setPositiveButton("ENTENDIDO") { dialog, _ ->
                             dialog.dismiss()
                             try { ringtone?.stop() } catch (_: Exception) {}
+                            try { toneGenerator?.stopTone(); toneGenerator?.release() } catch (_: Exception) {}
                             binding.root.setBackgroundColor(originalBgColor)
                         }
                         .setCancelable(false)
