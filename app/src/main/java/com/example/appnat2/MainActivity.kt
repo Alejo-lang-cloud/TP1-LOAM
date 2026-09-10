@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {
+        setContent { //compose construye la interfaz
             Appnat2Theme {
                 Appnat2App()
             }
@@ -77,10 +77,10 @@ fun Appnat2App() { //el destino por defecto es el Home, y currentDestination me 
                 )
             }
         }
-    ) {
+    ) { //definimos el "marco" (espacio arriba y abajo) de la app con scaffold (compose)
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Box(
-                modifier = Modifier
+            Box( //el box ocupa todo el espacio disponible
+                modifier = Modifier //modifier va indicando como se comporta cada componente del box
                     .fillMaxSize()
                     .padding(
                         top = innerPadding.calculateTopPadding(),

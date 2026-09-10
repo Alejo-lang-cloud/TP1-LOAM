@@ -60,7 +60,7 @@ fun HomeScreen() {
     ) { permissions ->
         val fineGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
         val coarseGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
-
+        //localización exacta o aproximada
         if (fineGranted || coarseGranted) {
             Toast.makeText(context, "Permisos de ubicación concedidos", Toast.LENGTH_SHORT).show()
         } else {

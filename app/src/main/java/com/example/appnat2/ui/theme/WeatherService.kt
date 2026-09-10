@@ -1,5 +1,5 @@
 package com.example.appnat2.ui.theme
-
+//retrofrit se encarga de realizar la peticion HTTP y Gson de convertir la respuesta JSON en objetos Kotlin
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
